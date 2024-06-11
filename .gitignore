@@ -1,6 +1,7 @@
 # Objects.
 .scons-cache/
 *.os
+*.dll
 
 # SConstruct
 .sconf_temp
