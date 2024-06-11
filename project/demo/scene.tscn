@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://c7u64tpv6byvb"]
+
+[ext_resource type="Script" path="res://demo/scene.gd" id="1_lih0m"]
+[ext_resource type="Script" path="res://demo/godot_signal_r.gd" id="2_ugn70"]
+
+[node name="Scene" type="Node"]
+script = ExtResource("1_lih0m")
+
+[node name="Godot_SignalR" type="Godot_SignalR" parent="."]
+script = ExtResource("2_ugn70")

@@ -1,0 +1,18 @@
+[configuration]
+
+entry_symbol = "gdextension_init"
+compatibility_minimum = 4.2
+
+[libraries]
+windows.debug.x86_64 = "res://addons/signalrclient/bin/libsignalrclient.windows.debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/signalrclient/bin/signalrclient.windows.release.x86_64.dll"
+
+[dependencies]
+windows.debug.x86_64 = {
+	"res://addons/signalrclient/bin/debug.microsoft-signalr.dll" : "",
+	"res://addons/signalrclient/bin/cpprest_2_10.dll" : "",
+	"res://addons/signalrclient/bin/jsoncpp.dll" : "",
+	"res://addons/signalrclient/bin/libcrypto-3-x64.dll" : "",
+	"res://addons/signalrclient/bin/libssl.dll" : "",
+	"res://addons/signalrclient/bin/zlib1.dll" : ""
+}
