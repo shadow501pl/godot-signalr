@@ -1,7 +1,9 @@
 # Godot-SignalR
 A **WIP** SignalR adaptation for godot, using GdExtension
-- Uses [microsoft-signalr](https://github.com/aspnet/SignalR-Client-Cpp/tree/main?tab=readme-ov-file#command-line-build) and all of its dependencies
-- Currently there is no precompiled version, you need to compile it yourself
+> Uses [microsoft-signalr](https://github.com/aspnet/SignalR-Client-Cpp/tree/main?tab=readme-ov-file#command-line-build) and all of its dependencies
+
+> Currently there is no precompiled version, you need to compile it yourself
+
 Created to allow for pubsubconnectionhandles in godot-playfab
 
 ### 🕹️ Usage
@@ -16,15 +18,18 @@ var handle : String = node.get_handle()
 ```
 
 ### ✅ Functionality
-- Connect to a signalr server (note: Not fully tested, and may not work at all on diffrent operating systems)
+- **Connect to a signalr server** (Note: Not fully tested, and may not work at all on diffrent operating systems)
+- **Disconnect to a signalr server** (Note: ^^^)
 ### ❌ To be added
-- Add signalr::signalr_client_config to be able to add html-headers
-- Add signals/events in godot
-- Add functions to manage the connection in godot
+- **Add signalr::signalr_client_config to be able to add html-headers** (Note: Features draft)
+- **Add signals/events in godot** (Note: Features draft)
+- **Add functions to manage the connection in godot**
+- **Add async/threading capabilities to stop freezes and hopefully fix configs/signals** 
 
 ### 📌 Guide to developing this addon
 1. Clone Repo
 2. Run ```git submodule update --init``` to get godot-cpp
 3. Install vpckg in this directory
 4. Install [microsoft-signalr](https://github.com/aspnet/SignalR-Client-Cpp/tree/main?tab=readme-ov-file#command-line-build) using vpckg and all its dependencies
+> Make sure you match the structure provided in **sconstruct** (Note: The dependencies of microsoft-signalr should be installed automatically)
 5. Done, you should now be able to develop the addon!
