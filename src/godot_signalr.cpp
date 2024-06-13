@@ -28,7 +28,7 @@ class logger : public signalr::log_writer
 
 void Godot_SignalR::_bind_methods()
 {
-	ClassDB::bind_method(D_METHOD("build"), &Godot_SignalR::build);
+	//ClassDB::bind_method(D_METHOD("build"), &Godot_SignalR::build);
 	ClassDB::bind_method(D_METHOD("async_build"), &Godot_SignalR::async_build);
 	ADD_SIGNAL(MethodInfo("receive_message", PropertyInfo(Variant::STRING, "message")));
 }
@@ -58,17 +58,39 @@ Godot_SignalR::~Godot_SignalR()
 }
 
 
+void Godot_SignalR::_notification(int p_what) {
+    // Prevents this from running in the editor, only during game mode.
+    switch (p_what) {
+        case NOTIFICATION_EXIT_TREE: { // Thread must be disposed (or "joined"), for portability.
+            // Wait until it exits.
+            if (async.is_valid()) {
+                async->wait_to_finish();
+            }
+
+            async.unref();
+        } break;
+    }
+}
 
 
-// TODO : Make this async
-void Godot_SignalR::async_build(String address, String http_headers) 
+
+// Async in progress
+void Godot_SignalR::async_build(String _address, String _http_headers) 
 {
-	build(address, http_headers); // Implement threads to prevent freezes that distrupt gameplay
+	if(async.is_valid()) {
+		godot::UtilityFunctions::print("There is already an active connection.");
+		return;
+	}
+	async.instantiate();
+	address = _address;
+	http_headers = _http_headers;
+	async->start(callable_mp(this, &Godot_SignalR::build), Thread::PRIORITY_NORMAL);
+	//build(address, http_headers); // Implement threads to prevent freezes that distrupt gameplay
 }
 
 // I suspect putting this on a thread(async) will make config/ReceiveMessage work
 // Currently only way to pass in auth is thru address, (just append &access_token=<token>)
-void Godot_SignalR::build(String address, String http_headers)
+void Godot_SignalR::build()
 {
 	std::string url = address.utf8();
 	std::string headers = http_headers.utf8();
@@ -102,17 +124,23 @@ void Godot_SignalR::build(String address, String http_headers)
 	//}
 
 	//connection.set_client_config(nativeConfig);
+	local_connection.on("ReceiveMessage", [this](const std::vector<signalr::value>& m)
+    {
+		receive_message(m);
+		//emit_signal("receive_message", m[0].as_string().c_str());
+    });
+
 	std::promise<void> start_task;
 	local_connection.start([&start_task](std::exception_ptr exception) {
     	start_task.set_value();
 	});
 
-	//local_connection.on("ReceiveMessage", [this](const std::vector<signalr::value>& m)
-    //{
-	//	emit_signal("receive_message", m[0].as_string().c_str());
-    //    //std::cout << std::endl << m[0].as_string() << std::endl << "Enter your message: ";
-    //});
-
 	start_task.get_future().get();
 
+}
+
+void Godot_SignalR::receive_message(const std::vector<signalr::value>& m) {
+	if (m[0].is_string()){
+		emit_signal("receive_message", m[0].as_string().c_str());
+	}
 }
