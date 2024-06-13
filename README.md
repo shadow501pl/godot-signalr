@@ -12,9 +12,11 @@ Created to allow for pubsubconnectionhandles in godot-playfab
 var node = $Signal_R
 # For a connection you need the url and http_headers (they can be left blank if not needed)
 node.build("http://localhost:5000", "")
-# Now get the handle (unfinished)
-var handle : String = node.get_handle()
-# (todo documentation)
+# Now you can invoke a function
+node.invoke("Function_name", ["example", "example2"])
+# There are also signals
+node.receive_message(variant : message)
+node.receive_invoke_result(variant : result)
 ```
 
 ### ✅ Functionality
@@ -23,8 +25,8 @@ var handle : String = node.get_handle()
 - **Listening to messages inside godot** (Note: Currently only strings)
 - **Uses async/threading to prevent freezing**
 ### ❌ To be added
-- **Add signalr::signalr_client_config to be able to add html-headers** (Note: Features draft)
-- **Add functions to manage the connection in godot**
+- **Add signalr::signalr_client_config to be able to add html-headers** (Note: Always crashes game no matter the circumstances)
+- **Add functions to manage the connection in godot** (Note: Partially added)
 
 ### 📌 Guide to developing this addon
 1. Clone Repo
