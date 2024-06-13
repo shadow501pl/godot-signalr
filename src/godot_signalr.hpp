@@ -31,7 +31,10 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+
 public:
+	void invoke(String function_name, godot::Array args);
+
     void Stop();
 
     Godot_SignalR();
@@ -42,4 +45,6 @@ public:
 	void async_build(String _address, String _http_headers);
 
 	void receive_message(const std::vector<signalr::value>& m);
+    void receive_invoke_response(const signalr::value& value);
+    signalr::value convertGodotVariantToSignalRValue(const godot::Variant &variant);
 };

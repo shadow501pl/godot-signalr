@@ -12,6 +12,7 @@
 //#include <http_client.h>
 #include "signalr_client_config.h"
 #include "signalr_value.h"
+//#include <string.hpp>
 
 using namespace godot;
 
@@ -26,11 +27,49 @@ class logger : public signalr::log_writer
     }
 };
 
+
+signalr::value Godot_SignalR::convertGodotVariantToSignalRValue(const godot::Variant& variant) {
+    signalr::value result; // Default to NIL
+
+    switch (variant.get_type()) {
+        case godot::Variant::Type::NIL:
+            // Handle nil type
+            break;
+        case godot::Variant::Type::BOOL:
+            // Handle boolean type
+            //result = signalr::value(variant.bool());
+            break;
+        case godot::Variant::Type::INT:
+            // Handle integer type
+            //result = signalr::value(variant.int());
+            break;
+        case godot::Variant::Type::FLOAT:
+            // Handle real (floating-point) type
+			//float fl = variant.float()
+            //result = signalr::value(variant.float());
+            break;
+        case godot::Variant::Type::STRING:
+            // Handle string type
+			//godot::String str = variant.String();
+
+            result = signalr::value(variant.stringify().utf8());
+            break;
+        default:
+            // Handle unsupported types or log an error
+			godot::UtilityFunctions::printerr("Invalid value passed");
+            break;
+    }
+
+    return result;
+}
+
 void Godot_SignalR::_bind_methods()
 {
 	//ClassDB::bind_method(D_METHOD("build"), &Godot_SignalR::build);
-	ClassDB::bind_method(D_METHOD("async_build"), &Godot_SignalR::async_build);
-	ADD_SIGNAL(MethodInfo("receive_message", PropertyInfo(Variant::STRING, "message")));
+	ClassDB::bind_method(D_METHOD("build"), &Godot_SignalR::async_build);
+	ClassDB::bind_method(D_METHOD("invoke"), &Godot_SignalR::invoke);
+	ADD_SIGNAL(MethodInfo("receive_message", PropertyInfo(Variant::OBJECT, "message")));
+	ADD_SIGNAL(MethodInfo("receive_invoke_result", PropertyInfo(Variant::OBJECT, "result")));
 }
 
 // Not sure if this works, but oh well
@@ -73,8 +112,35 @@ void Godot_SignalR::_notification(int p_what) {
 }
 
 
+void Godot_SignalR::invoke(String function_name, godot::Array args) {
+	if (args.is_empty()) {
+		return;
+	}
+	if(connection != nullptr) {
+		std::vector<signalr::value> signalRVector;
+		for (int i = 0; i < args.size(); ++i) {
+    		signalRVector.push_back(convertGodotVariantToSignalRValue(args[i]));
+		std::string func = function_name.utf8();
+		connection->invoke(func, signalRVector, [this](const signalr::value& value, std::exception_ptr exception)
+    	{
+            if (value.is_string())
+            {
+                std::cout << "Received: " << value.as_string() << std::endl;
+            }
+            else
+            {
+                std::cout << "hub method invocation has completed" << std::endl;
+            }
+			receive_invoke_response(value);
+        });
+		}	
+	}
+}
 
-// Async in progress
+
+
+
+// Async/Threading
 void Godot_SignalR::async_build(String _address, String _http_headers) 
 {
 	if(async.is_valid()) {
@@ -85,10 +151,9 @@ void Godot_SignalR::async_build(String _address, String _http_headers)
 	address = _address;
 	http_headers = _http_headers;
 	async->start(callable_mp(this, &Godot_SignalR::build), Thread::PRIORITY_NORMAL);
-	//build(address, http_headers); // Implement threads to prevent freezes that distrupt gameplay
 }
 
-// I suspect putting this on a thread(async) will make config/ReceiveMessage work
+// Threading allowed for events, unfortunately config crashes the game and i dont know why
 // Currently only way to pass in auth is thru address, (just append &access_token=<token>)
 void Godot_SignalR::build()
 {
@@ -108,17 +173,15 @@ void Godot_SignalR::build()
         	}
     	}
 	}
-
+	//signalr::signalr_client_config nativeConfig = signalr::signalr_client_config();
 	signalr::hub_connection_builder builder = signalr::hub_connection_builder::create(url);
 	builder.with_logging(std::make_shared <logger>(), signalr::trace_level::verbose);
-
-	godot::UtilityFunctions::print(" building hub, " + address);
+	//godot::UtilityFunctions::print(" building hub, " + address);
 
 	signalr::hub_connection local_connection = builder.build();
 	connection = &local_connection;
 	// TODO - Fix this
 	//auto nativeConfig = signalr::signalr_client_config();
-	//signalr::signalr_client_config nativeConfig;
 	//if(!headers.empty()) {
 	//	config.set_http_headers(resultMap);
 	//}
@@ -136,7 +199,7 @@ void Godot_SignalR::build()
 	});
 
 	start_task.get_future().get();
-
+	
 }
 
 void Godot_SignalR::receive_message(const std::vector<signalr::value>& m) {
@@ -144,3 +207,12 @@ void Godot_SignalR::receive_message(const std::vector<signalr::value>& m) {
 		emit_signal("receive_message", m[0].as_string().c_str());
 	}
 }
+void Godot_SignalR::receive_invoke_response(const signalr::value& value) {
+	if (value.is_string()){
+		emit_signal("receive_invoke_result", value.as_string().c_str());
+	}
+}
+
+
+
+
