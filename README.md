@@ -20,11 +20,11 @@ var handle : String = node.get_handle()
 ### ✅ Functionality
 - **Connect to a signalr server** (Note: Not fully tested, and may not work at all on diffrent operating systems)
 - **Disconnect to a signalr server** (Note: ^^^)
+- **Listening to messages inside godot** (Note: Currently only strings)
+- **Uses async/threading to prevent freezing**
 ### ❌ To be added
 - **Add signalr::signalr_client_config to be able to add html-headers** (Note: Features draft)
-- **Add signals/events in godot** (Note: Features draft)
 - **Add functions to manage the connection in godot**
-- **Add async/threading capabilities to stop freezes and hopefully fix configs/signals** 
 
 ### 📌 Guide to developing this addon
 1. Clone Repo
