@@ -111,7 +111,7 @@ void Godot_SignalR::_notification(int p_what) {
     }
 }
 
-
+// No idea if this works, no compilation errors tho. Yipee
 void Godot_SignalR::invoke(String function_name, godot::Array args) {
 	if (args.is_empty()) {
 		return;
@@ -177,16 +177,13 @@ void Godot_SignalR::build()
 	signalr::hub_connection_builder builder = signalr::hub_connection_builder::create(url);
 	builder.with_logging(std::make_shared <logger>(), signalr::trace_level::verbose);
 	//godot::UtilityFunctions::print(" building hub, " + address);
-
 	signalr::hub_connection local_connection = builder.build();
 	connection = &local_connection;
-	// TODO - Fix this
-	//auto nativeConfig = signalr::signalr_client_config();
-	//if(!headers.empty()) {
-	//	config.set_http_headers(resultMap);
-	//}
-
-	//connection.set_client_config(nativeConfig);
+	//Setting config does not work???
+	if (!http_headers.is_empty()) {
+		config.set_http_headers(resultMap);
+		//local_connection.set_client_config(config);	
+	}
 	local_connection.on("ReceiveMessage", [this](const std::vector<signalr::value>& m)
     {
 		receive_message(m);
