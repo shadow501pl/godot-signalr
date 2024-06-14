@@ -25,7 +25,7 @@ node.receive_invoke_result(variant : result)
 - **Listening to messages inside godot** (Note: Currently only strings)
 - **Uses async/threading to prevent freezing**
 ### ❌ To be added
-- **Add signalr::signalr_client_config to be able to add html-headers** (Note: Always crashes game no matter the circumstances)
+- **Add signalr::signalr_client_config to be able to add html-headers** (Note: Crashes the game when set)
 - **Add functions to manage the connection in godot** (Note: Partially added)
 
 ### 📌 Guide to developing this addon
